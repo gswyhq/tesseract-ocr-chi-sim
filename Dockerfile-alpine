@@ -1,0 +1,36 @@
+FROM python:3.5.6-alpine3.8
+
+RUN apk update && apk add tesseract-ocr
+
+RUN apk add wget
+
+RUN wget -t 0 -c https://raw.githubusercontent.com/tesseract-ocr/tessdata/master/chi_sim.traineddata -O /usr/share/tessdata/chi_sim.traineddata
+
+RUN apk --update add --no-cache --virtual .build-deps \
+        jpeg-dev \
+       zlib-dev \
+       freetype-dev \
+       lcms2-dev \
+       openjpeg-dev \
+       tiff-dev \
+       tk-dev \
+       tcl-dev \
+       gcc g++ \
+        --repository http://mirrors.ustc.edu.cn/alpine/v3.8/main/ --allow-untrusted \
+    && \
+    pip install jieba && pip install pytesseract
+    # && apk del -f .build-deps
+
+COPY start.py /root/start.py
+
+ENV LANG zh_CN.UTF-8
+ENV LANGUAGE zh_CN:zh
+ENV LC_ALL zh_CN.UTF-8
+
+WORKDIR /tmp
+
+CMD [ "/bin/bash"]
+
+# $ docker build --no-cache -t gswyhq/tesseract-ocr-chi-sim-alpine -f Dockerfile-alpine  .
+# $ docker run -v $PWD:/tmp --rm -it gswyhq/tesseract-ocr-chi-sim-alpine tesseract /tmp/1111.jpg /tmp/result -l chi_sim+eng
+# $ docker run -v $PWD:/tmp --rm -it gswyhq/tesseract-ocr-chi-sim-alpine python3 /root/start.py /tmp/1111.jpg
